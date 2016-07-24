@@ -16,7 +16,7 @@
 
 
 /** Function Headers */
-void detectAndDisplay( cv::Mat frame );
+cv::Mat detectAndDisplay( cv::Mat frame );
 
 /** Global variables */
 //-- Note, either copy these two files from opencv/data/haarscascades to your current folder, or change these locations
@@ -57,9 +57,10 @@ int main( int argc, const char** argv ) {
   frame = cv::imread(argv[1]);
   frame.copyTo(debugImage);
 
+  cv::Mat result;
       // Apply the classifier to the frame
       if( !frame.empty() ) {
-        detectAndDisplay( frame );
+        result = detectAndDisplay( frame );
       }
       else {
         printf(" cannot read image. terminating");
@@ -68,20 +69,19 @@ int main( int argc, const char** argv ) {
 
       imshow(main_window_name,debugImage);
 
-  for (;;) {
-      int c = cv::waitKey(10);
-      if( (char)c == 'c' ) { break; }
-      if( (char)c == 'f' ) {
-        imwrite("frame.png",frame);
-      }
-}
+      std::stringstream result_filename;
+      result_filename << argv[1];
+      result_filename << "_eyes.jpg";
+      
+      imwrite(result_filename.str().c_str(), result);
+      std::cout << "written file: " << result_filename.str() << std::endl;
 
   releaseCornerKernels();
 
   return 0;
 }
 
-void findEyes(cv::Mat frame_gray, cv::Rect face) {
+cv::Mat findEyes(cv::Mat frame_gray, cv::Rect face) {
   cv::Mat faceROI = frame_gray(face);
   cv::Mat debugFace = faceROI;
 
@@ -154,9 +154,7 @@ void findEyes(cv::Mat frame_gray, cv::Rect face) {
   }
 
   imshow(face_window_name, faceROI);
-//  cv::Rect roi( cv::Point( 0, 0 ), faceROI.size());
-//  cv::Mat destinationROI = debugImage( roi );
-//  faceROI.copyTo( destinationROI );
+  return faceROI;
 }
 
 
@@ -184,7 +182,7 @@ cv::Mat findSkin (cv::Mat &frame) {
 /**
  * @function detectAndDisplay
  */
-void detectAndDisplay( cv::Mat frame ) {
+cv::Mat detectAndDisplay( cv::Mat frame ) {
   std::vector<cv::Rect> faces;
   //cv::Mat frame_gray;
 
@@ -205,6 +203,6 @@ void detectAndDisplay( cv::Mat frame ) {
   }
   //-- Show what you got
   if (faces.size() > 0) {
-    findEyes(frame_gray, faces[0]);
+    return findEyes(frame_gray, faces[0]);
   }
 }
