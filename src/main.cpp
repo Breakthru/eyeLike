@@ -20,7 +20,7 @@ void detectAndDisplay( cv::Mat frame );
 
 /** Global variables */
 //-- Note, either copy these two files from opencv/data/haarscascades to your current folder, or change these locations
-cv::String face_cascade_name = "../../../res/haarcascade_frontalface_alt.xml";
+cv::String face_cascade_name = "/usr/share/opencv/haarcascades/haarcascade_frontalface_alt.xml";
 cv::CascadeClassifier face_cascade;
 std::string main_window_name = "Capture - Face detection";
 std::string face_window_name = "Capture - Face";
@@ -54,41 +54,27 @@ int main( int argc, const char** argv ) {
   ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2),
           43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
 
-  // I make an attempt at supporting both 2.x and 3.x OpenCV
-#if CV_MAJOR_VERSION < 3
-  CvCapture* capture = cvCaptureFromCAM( -1 );
-  if( capture ) {
-    while( true ) {
-      frame = cvQueryFrame( capture );
-#else
-  cv::VideoCapture capture(-1);
-  if( capture.isOpened() ) {
-    while( true ) {
-      capture.read(frame);
-#endif
-      // mirror it
-      cv::flip(frame, frame, 1);
-      frame.copyTo(debugImage);
+  frame = cv::imread(argv[1]);
+  frame.copyTo(debugImage);
 
       // Apply the classifier to the frame
       if( !frame.empty() ) {
         detectAndDisplay( frame );
       }
       else {
-        printf(" --(!) No captured frame -- Break!");
-        break;
+        printf(" cannot read image. terminating");
+        return -1;
       }
 
       imshow(main_window_name,debugImage);
 
+  for (;;) {
       int c = cv::waitKey(10);
       if( (char)c == 'c' ) { break; }
       if( (char)c == 'f' ) {
         imwrite("frame.png",frame);
       }
-
-    }
-  }
+}
 
   releaseCornerKernels();
 
